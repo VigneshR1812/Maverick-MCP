@@ -1,0 +1,8 @@
+README.md
+setup.py
+maverick_mcp_server.egg-info/PKG-INFO
+maverick_mcp_server.egg-info/SOURCES.txt
+maverick_mcp_server.egg-info/dependency_links.txt
+maverick_mcp_server.egg-info/entry_points.txt
+maverick_mcp_server.egg-info/requires.txt
+maverick_mcp_server.egg-info/top_level.txt

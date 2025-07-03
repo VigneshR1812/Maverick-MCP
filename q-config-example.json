@@ -1,0 +1,15 @@
+{
+  "_comment": "Amazon Q CLI MCP Server Configuration for Maverick",
+  "_note": "Replace 'your-actual-api-token-here' with your real Maverick API key",
+  "_auth_info": "This server uses the 'appian-api-key' header for authentication",
+  "mcpServers": {
+    "maverick": {
+      "command": "python3",
+      "args": ["/Users/vigneshwaran.rajesh/companyWork/EE-hackathon/maverick-mcp/server.py"],
+      "env": {
+        "MAVERICK_BASE_URL": "https://maverick-staging.appiancloud.com",
+        "MAVERICK_API_TOKEN": "your-actual-api-token-here"
+      }
+    }
+  }
+}

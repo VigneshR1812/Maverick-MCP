@@ -1,0 +1,192 @@
+openapi: 3.0.1
+info:
+  title: Maverick Site Management API
+  description: API for creating and querying Maverick sites using Stratus SSO.
+  version: 1.0.0
+servers:
+  - url: https://maverick-dev.appiancloud.com/suite/webapi
+    description: Staging Environment
+paths:
+  /sites:
+    post:
+      summary: Create a New Site
+      description: Creates a new site using values passed in the request body. Supports a dry run mode.
+      operationId: createSite
+      parameters:
+        - $ref: '#/components/parameters/SignInParameter' # SSO Authentication
+        - name: dryRun
+          in: query
+          description: If true, performs a validation check without creating the site.
+          required: false
+          schema:
+            type: boolean
+            default: false
+      requestBody:
+        description: Site creation details. Only 'subdomain' is required.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteRequestBody'
+      responses:
+        '201':
+          description: Site created successfully.
+        '400':
+          description: Validation errors.
+        '405':
+          description: Dry run was successful with no validation errors.
+        '500':
+          description: Internal server error.
+    get:
+      summary: Query for Sites
+      description: Queries for sites using a variety of filter and pagination parameters.
+      operationId: querySites
+      parameters:
+        - $ref: '#/components/parameters/SignInParameter' # SSO Authentication
+        # ... Other query parameters remain here
+        - name: siteList
+          in: query
+          description: A comma-delimited list of integer site IDs.
+          schema:
+            type: string
+        - name: purpose
+          in: query
+          description: A comma-delimited list of site purposes.
+          schema:
+            type: string
+        - name: region
+          in: query
+          description: A comma-delimited list of site regions.
+          schema:
+            type: string
+        - name: accountName
+          in: query
+          description: A comma-delimited list of account names.
+          schema:
+            type: string
+        - name: createdAfter
+          in: query
+          description: "Return sites created after this time (ISO8601 or MM/DD/YYYY hh:mm:ss AM/PM)."
+          schema:
+            type: string
+            format: date-time
+        - name: createdBefore
+          in: query
+          description: "Return sites created before this time (ISO8601 or MM/DD/YYYY hh:mm:ss AM/PM)."
+          schema:
+            type: string
+            format: date-time
+        - name: modifiedAfter
+          in: query
+          description: "Return sites modified after this time (ISO8601 or MM/DD/YYYY hh:mm:ss AM/PM)."
+          schema:
+            type: string
+            format: date-time
+        - name: status
+          in: query
+          description: Filter by a site status category.
+          schema:
+            type: string
+            enum: [Active, All, Shutdown, Error Starting, Error Stopping, Unknown, Ready]
+        - name: labelName
+          in: query
+          description: The name of the label to filter by. Must be used with labelValue.
+          schema:
+            type: string
+        - name: labelValue
+          in: query
+          description: A comma-delimited list of label values to filter by.
+          schema:
+            type: string
+        - name: startIndex
+          in: query
+          description: The starting index for pagination (must be > 0).
+          schema:
+            type: integer
+            default: 1
+        - name: batchSize
+          in: query
+          description: The number of results per page (must be >= -1).
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Successful query that returns one or more sites.
+          headers:
+            X-Total-Count:
+              description: The total count of sites matching the query.
+              schema:
+                type: integer
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Site'
+        '204':
+          description: Successful query that matches 0 sites.
+        '400':
+          description: Validation errors.
+        '500':
+          description: Internal server error.
+
+  /sites/{identifier}:
+    get:
+      summary: Get Site by Identifier
+      description: Gets information about a site by its siteId or siteName (subdomain).
+      operationId: getSiteByIdentifier
+      parameters:
+        - $ref: '#/components/parameters/SignInParameter' # SSO Authentication
+        - name: identifier
+          in: path
+          description: The numeric siteId or string siteName of the site to retrieve.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful query, returning one or more sites.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Site'
+        '404':
+          description: The site with the specified identifier does not exist.
+        '500':
+          description: Internal server error.
+
+components:
+  parameters:
+    SignInParameter:
+      name: signin
+      in: query
+      description: Specifies the SSO authentication method.
+      required: true
+      schema:
+        type: string
+        enum: [stratus-sso]
+        default: stratus-sso
+  schemas:
+    SiteRequestBody:
+      type: object
+      required:
+        - subdomain
+      properties:
+        subdomain:
+          type: string
+          description: The site name, which becomes its subdomain.
+        installer:
+          type: string
+        region:
+          type: string
+        purpose:
+          type: string
+    Site:
+      type: object
+      properties:
+        siteId:
+          type: integer
+        # ... (all other Site properties as previously defined)
